@@ -31,8 +31,8 @@ Give the input and view the output
     - Moving 1 into rax and rdx to denote write syscall and the first parameter
     - Moving rcx into rsi to give the long value
     - syscall is made which writes on stdout the long value as a string
-    - A pointer is made for C in stack
-    - Return takes to C
+    - mov instruction stores value of C in the rax register which is then pushed
+    - Return hence takes to C as rax was pushed on the stack which has C moved in it
 
 - ### `C.c`
     - `exit(0)` terminates the program

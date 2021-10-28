@@ -9,5 +9,6 @@ B:
     mov rsi, rcx
     mov rdx, 8
     syscall
-    mov long [rsp], C
-	ret
+    mov rax, C
+    push rax
+    ret
