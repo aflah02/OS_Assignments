@@ -4358,13 +4358,50 @@ struct marks_structure
     int total_assignment5;
     int total_assignment6;
 };
-
-void processData(char* sectionTracker[26], int marks[26][6])
+int rows;
+int countRows(){
+    int fileDescriptor = open("student_record.csv", 
+# 25 "1a.c" 3 4
+                                                   00
+# 25 "1a.c"
+                                                           );
+    if (fileDescriptor == -1)
+    {
+        perror("Error in Open Operation");
+        return 0;
+    }
+    char *tempchar = (char *)calloc(9696, sizeof(char));
+    char *data[9696];
+    int bytesRead = read(fileDescriptor, tempchar, 9696);
+    if (bytesRead < 0)
+    {
+        perror("Error in Read Operation");
+        return 0;
+    }
+    char *token = strtok(tempchar, "\n");
+    int line_no = 0;
+    while (token != 
+# 41 "1a.c" 3 4
+                   ((void *)0)
+# 41 "1a.c"
+                       )
+    {
+        line_no += 1;
+        token = strtok(
+# 44 "1a.c" 3 4
+                      ((void *)0)
+# 44 "1a.c"
+                          , "\n");
+    }
+    rows = line_no;
+    return line_no;
+}
+void processData(char* sectionTracker[rows-1], int marks[rows-1][6], int r)
 {
     int fileDescriptor = open("student_record.csv", 
-# 26 "1a.c" 3 4
+# 51 "1a.c" 3 4
                                                    00
-# 26 "1a.c"
+# 51 "1a.c"
                                                            );
     if (fileDescriptor == -1)
     {
@@ -4382,64 +4419,64 @@ void processData(char* sectionTracker[26], int marks[26][6])
     char *token = strtok(tempchar, "\n");
     int line_no = 0;
     while (token != 
-# 42 "1a.c" 3 4
+# 67 "1a.c" 3 4
                    ((void *)0)
-# 42 "1a.c"
+# 67 "1a.c"
                        )
     {
         data[line_no] = token;
         line_no += 1;
         token = strtok(
-# 46 "1a.c" 3 4
+# 71 "1a.c" 3 4
                       ((void *)0)
-# 46 "1a.c"
+# 71 "1a.c"
                           , "\n");
     }
     int tempIntforStudentID;
-    for (int i = 0; i < 26; i++)
+    for (int i = 0; i < r; i++)
     {
         token = strtok(data[i + 1], ",");
         tempIntforStudentID = atoi(token);
         token = strtok(
-# 53 "1a.c" 3 4
+# 78 "1a.c" 3 4
                       ((void *)0)
-# 53 "1a.c"
+# 78 "1a.c"
                           , ",");
         sectionTracker[i] = token;
         token = strtok(
-# 55 "1a.c" 3 4
+# 80 "1a.c" 3 4
                       ((void *)0)
-# 55 "1a.c"
+# 80 "1a.c"
                           , ",");
         marks[i][0] = atoi(token);
         token = strtok(
-# 57 "1a.c" 3 4
+# 82 "1a.c" 3 4
                       ((void *)0)
-# 57 "1a.c"
+# 82 "1a.c"
                           , ",");
         marks[i][1] = atoi(token);
         token = strtok(
-# 59 "1a.c" 3 4
+# 84 "1a.c" 3 4
                       ((void *)0)
-# 59 "1a.c"
+# 84 "1a.c"
                           , ",");
         marks[i][2] = atoi(token);
         token = strtok(
-# 61 "1a.c" 3 4
+# 86 "1a.c" 3 4
                       ((void *)0)
-# 61 "1a.c"
+# 86 "1a.c"
                           , ",");
         marks[i][3] = atoi(token);
         token = strtok(
-# 63 "1a.c" 3 4
+# 88 "1a.c" 3 4
                       ((void *)0)
-# 63 "1a.c"
+# 88 "1a.c"
                           , ",");
         marks[i][4] = atoi(token);
         token = strtok(
-# 65 "1a.c" 3 4
+# 90 "1a.c" 3 4
                       ((void *)0)
-# 65 "1a.c"
+# 90 "1a.c"
                           , ",");
         marks[i][5] = atoi(token);
     }
@@ -4456,13 +4493,13 @@ void stringPrinter(char *str)
     if (w == -1)
     {
         if (
-# 80 "1a.c" 3 4
+# 105 "1a.c" 3 4
            (*__errno_location ()) 
-# 80 "1a.c"
+# 105 "1a.c"
                  == 
-# 80 "1a.c" 3 4
+# 105 "1a.c" 3 4
                     4
-# 80 "1a.c"
+# 105 "1a.c"
                          )
         {
             perror("Error in Writing String");
@@ -4470,7 +4507,7 @@ void stringPrinter(char *str)
         }
     }
 }
-void printforgivensection(char* section, char* sectionTracker[26], int marks[26][6], struct marks_structure *marks_store,int *section_size){
+void printforgivensection(char* section, char* sectionTracker[rows-1], int marks[rows-1][6], struct marks_structure *marks_store,int *section_size, int r){
     int total_assignment1 = 0;
     int total_assignment2 = 0;
     int total_assignment3 = 0;
@@ -4478,7 +4515,7 @@ void printforgivensection(char* section, char* sectionTracker[26], int marks[26]
     int total_assignment5 = 0;
     int total_assignment6 = 0;
     int counter = 0;
-    for (int i = 0; i < 26; i++){
+    for (int i = 0; i < r; i++){
         if (strcmp(sectionTracker[i], section)==0){
             counter++;
             total_assignment1 += marks[i][0];
@@ -4522,8 +4559,9 @@ void printforgivensection(char* section, char* sectionTracker[26], int marks[26]
 
 int main()
 {
-    int marks[26][6];
-    char* sectionTracker[26];
+    int row = countRows();
+    int marks[rows-1][6];
+    char* sectionTracker[rows-1];
     pid_t id;
     int stat;
     int ctr = 1;
@@ -4536,38 +4574,38 @@ int main()
     id = fork();
     if (id == 0)
     {
-        processData(sectionTracker, marks);
+        processData(sectionTracker, marks, rows-1);
         section = "A";
-        printforgivensection(section, sectionTracker, marks, &marks_store, &section_size);
+        printforgivensection(section, sectionTracker, marks, &marks_store, &section_size, rows-1);
         exit(0);
     }
     else if (id > 0)
     {
-        processData(sectionTracker, marks);
+        processData(sectionTracker, marks, rows-1);
         section = "B";
         int x = waitpid(id, &stat, 0);
         if (stat == 
-# 163 "1a.c" 3 4
+# 189 "1a.c" 3 4
                    4
-# 163 "1a.c"
+# 189 "1a.c"
                         )
         {
             perror("Error in waitpid");
             return 
-# 166 "1a.c" 3 4
+# 192 "1a.c" 3 4
                   70
-# 166 "1a.c"
+# 192 "1a.c"
                              ;
         }
-        printforgivensection(section, sectionTracker, marks, &marks_store2, &section_size2);
+        printforgivensection(section, sectionTracker, marks, &marks_store2, &section_size2, rows-1);
     }
     else
     {
         perror("Error in Fork");
         return 
-# 173 "1a.c" 3 4
+# 199 "1a.c" 3 4
               71
-# 173 "1a.c"
+# 199 "1a.c"
                       ;
     }
     return 0;
