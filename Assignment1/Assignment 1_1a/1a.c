@@ -20,8 +20,33 @@ struct marks_structure
     int total_assignment5;
     int total_assignment6;
 };
-
-void processData(char* sectionTracker[26], int marks[26][6])
+int rows;
+int countRows(){
+    int fileDescriptor = open("student_record.csv", O_RDONLY);
+    if (fileDescriptor == -1)
+    {
+        perror("Error in Open Operation");
+        return 0;
+    }
+    char *tempchar = (char *)calloc(9696, sizeof(char));
+    char *data[9696];
+    int bytesRead = read(fileDescriptor, tempchar, 9696);
+    if (bytesRead < 0)
+    {
+        perror("Error in Read Operation");
+        return 0;
+    }
+    char *token = strtok(tempchar, "\n");
+    int line_no = 0;
+    while (token != NULL)
+    {
+        line_no += 1;
+        token = strtok(NULL, "\n");
+    }
+    rows = line_no;
+    return line_no;
+}
+void processData(char* sectionTracker[rows-1], int marks[rows-1][6], int r)
 {
     int fileDescriptor = open("student_record.csv", O_RDONLY);
     if (fileDescriptor == -1)
@@ -46,7 +71,7 @@ void processData(char* sectionTracker[26], int marks[26][6])
         token = strtok(NULL, "\n");
     }
     int tempIntforStudentID;
-    for (int i = 0; i < 26; i++)
+    for (int i = 0; i < r; i++)
     {
         token = strtok(data[i + 1], ",");
         tempIntforStudentID = atoi(token);
@@ -84,7 +109,7 @@ void stringPrinter(char *str)
         }
     }
 }
-void printforgivensection(char* section, char* sectionTracker[26], int marks[26][6], struct marks_structure *marks_store,int *section_size){
+void printforgivensection(char* section, char* sectionTracker[rows-1], int marks[rows-1][6], struct marks_structure *marks_store,int *section_size, int r){
     int total_assignment1 = 0;
     int total_assignment2 = 0;
     int total_assignment3 = 0;
@@ -92,7 +117,7 @@ void printforgivensection(char* section, char* sectionTracker[26], int marks[26]
     int total_assignment5 = 0;
     int total_assignment6 = 0;
     int counter = 0;
-    for (int i = 0; i < 26; i++){
+    for (int i = 0; i < r; i++){
         if (strcmp(sectionTracker[i], section)==0){
             counter++;
             total_assignment1 += marks[i][0];
@@ -136,8 +161,9 @@ void printforgivensection(char* section, char* sectionTracker[26], int marks[26]
 
 int main()
 {
-    int marks[26][6];
-    char* sectionTracker[26];
+    int row = countRows();
+    int marks[rows-1][6];
+    char* sectionTracker[rows-1];
     pid_t id;
     int stat;
     int ctr = 1;
@@ -150,14 +176,14 @@ int main()
     id = fork();
     if (id == 0)
     {   
-        processData(sectionTracker, marks); 
+        processData(sectionTracker, marks, rows-1); 
         section = "A";
-        printforgivensection(section, sectionTracker, marks, &marks_store, &section_size);
+        printforgivensection(section, sectionTracker, marks, &marks_store, &section_size, rows-1);
         exit(0);
     }
     else if (id > 0)
     {
-        processData(sectionTracker, marks);
+        processData(sectionTracker, marks, rows-1);
         section = "B";
         int x = waitpid(id, &stat, 0);
         if (stat == EINTR)
@@ -165,7 +191,7 @@ int main()
             perror("Error in waitpid");
             return EX_SOFTWARE;
         }
-        printforgivensection(section, sectionTracker, marks, &marks_store2, &section_size2);
+        printforgivensection(section, sectionTracker, marks, &marks_store2, &section_size2, rows-1);
     }
     else
     {

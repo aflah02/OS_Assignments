@@ -5322,10 +5322,9 @@ extern int
           (*__errno_location ())
 # 13 "1b.c"
                ;
-char* section;
 double secA[6];
 double secB[6];
-
+int total_count = 0;
 struct marks_structure
 {
     int total_assignment1;
@@ -5336,16 +5335,12 @@ struct marks_structure
     int total_assignment6;
 };
 
-void processData(void* args)
+void processDatasecA(void* args)
 {
-    int marks[26][6];
-    char* sectionTracker[26];
-    int section_size = 0;
-    struct marks_structure marks_store = {0,0,0,0,0,0};
 int fileDescriptor = open("student_record.csv", 
-# 34 "1b.c" 3 4
+# 29 "1b.c" 3 4
                                                00
-# 34 "1b.c"
+# 29 "1b.c"
                                                        );
     if (fileDescriptor == -1)
     {
@@ -5363,64 +5358,68 @@ int fileDescriptor = open("student_record.csv",
     char *token = strtok(tempchar, "\n");
     int line_no = 0;
     while (token != 
-# 50 "1b.c" 3 4
+# 45 "1b.c" 3 4
                    ((void *)0)
-# 50 "1b.c"
+# 45 "1b.c"
                        )
     {
         data[line_no] = token;
         line_no += 1;
         token = strtok(
-# 54 "1b.c" 3 4
+# 49 "1b.c" 3 4
                       ((void *)0)
-# 54 "1b.c"
+# 49 "1b.c"
                           , "\n");
     }
+    int marks[line_no-1][6];
+    char* sectionTracker[line_no-1];
+    int section_size = 0;
+    struct marks_structure marks_store = {0,0,0,0,0,0};
     int tempIntforStudentID;
-    for (int i = 0; i < 26; i++)
+    for (int i = 0; i < line_no-1; i++)
     {
         token = strtok(data[i + 1], ",");
         tempIntforStudentID = atoi(token);
         token = strtok(
-# 61 "1b.c" 3 4
+# 60 "1b.c" 3 4
                       ((void *)0)
-# 61 "1b.c"
+# 60 "1b.c"
                           , ",");
         sectionTracker[i] = token;
         token = strtok(
-# 63 "1b.c" 3 4
+# 62 "1b.c" 3 4
                       ((void *)0)
-# 63 "1b.c"
+# 62 "1b.c"
                           , ",");
         marks[i][0] = atoi(token);
         token = strtok(
-# 65 "1b.c" 3 4
+# 64 "1b.c" 3 4
                       ((void *)0)
-# 65 "1b.c"
+# 64 "1b.c"
                           , ",");
         marks[i][1] = atoi(token);
         token = strtok(
-# 67 "1b.c" 3 4
+# 66 "1b.c" 3 4
                       ((void *)0)
-# 67 "1b.c"
+# 66 "1b.c"
                           , ",");
         marks[i][2] = atoi(token);
         token = strtok(
-# 69 "1b.c" 3 4
+# 68 "1b.c" 3 4
                       ((void *)0)
-# 69 "1b.c"
+# 68 "1b.c"
                           , ",");
         marks[i][3] = atoi(token);
         token = strtok(
-# 71 "1b.c" 3 4
+# 70 "1b.c" 3 4
                       ((void *)0)
-# 71 "1b.c"
+# 70 "1b.c"
                           , ",");
         marks[i][4] = atoi(token);
         token = strtok(
-# 73 "1b.c" 3 4
+# 72 "1b.c" 3 4
                       ((void *)0)
-# 73 "1b.c"
+# 72 "1b.c"
                           , ",");
         marks[i][5] = atoi(token);
     }
@@ -5429,6 +5428,7 @@ int fileDescriptor = open("student_record.csv",
         perror("File is Closed");
         return;
     }
+    total_count = line_no-1;
     int total_assignment1 = 0;
     int total_assignment2 = 0;
     int total_assignment3 = 0;
@@ -5437,8 +5437,8 @@ int fileDescriptor = open("student_record.csv",
     int total_assignment6 = 0;
     int counter = 0;
 
-    for (int i = 0; i < 26; i++){
-        if (strcmp(sectionTracker[i], section)==0){
+    for (int i = 0; i < line_no-1; i++){
+        if (strcmp(sectionTracker[i], "A")==0){
             counter++;
             total_assignment1 += marks[i][0];
             total_assignment2 += marks[i][1];
@@ -5457,35 +5457,25 @@ int fileDescriptor = open("student_record.csv",
     ms.total_assignment5 = total_assignment5;
     ms.total_assignment6 = total_assignment6;
     char str[1000000];
-    if (section == "A"){
     secA[0] = total_assignment1;
     secA[1] = total_assignment2;
     secA[2] = total_assignment3;
     secA[3] = total_assignment4;
     secA[4] = total_assignment5;
     secA[5] = total_assignment6;
-    }
-    if (section == "B"){
-    secB[0] = total_assignment1;
-    secB[1] = total_assignment2;
-    secB[2] = total_assignment3;
-    secB[3] = total_assignment4;
-    secB[4] = total_assignment5;
-    secB[5] = total_assignment6;
-    }
     double avg1 = (double) (ms.total_assignment1)/counter;
-    snprintf(str, 10000, "The average marks of all students in Section %s in Assignment %d is: %lf\n", section, 1, avg1);
+    snprintf(str, 10000, "The average marks of all students in Section A in Assignment %d is: %lf\n", 1, avg1);
     size_t w1 = write(1, str, strlen(str));
     if (w1 < 0)
     {
         if (
-# 130 "1b.c" 3 4
+# 120 "1b.c" 3 4
            (*__errno_location ()) 
-# 130 "1b.c"
+# 120 "1b.c"
                  == 
-# 130 "1b.c" 3 4
+# 120 "1b.c" 3 4
                     4
-# 130 "1b.c"
+# 120 "1b.c"
                          )
         {
             perror("write");
@@ -5493,18 +5483,18 @@ int fileDescriptor = open("student_record.csv",
         }
     }
     double avg2 = (double) ms.total_assignment2/counter;
-    snprintf(str, 10000, "The average marks of all students in Section %s in Assignment %d is: %lf\n", section, 2, avg2);
+    snprintf(str, 10000, "The average marks of all students in Section A in Assignment %d is: %lf\n", 2, avg2);
     size_t w2 = write(1, str, strlen(str));
     if (w2 < 0)
     {
         if (
-# 141 "1b.c" 3 4
+# 131 "1b.c" 3 4
            (*__errno_location ()) 
-# 141 "1b.c"
+# 131 "1b.c"
                  == 
-# 141 "1b.c" 3 4
+# 131 "1b.c" 3 4
                     4
-# 141 "1b.c"
+# 131 "1b.c"
                          )
         {
             perror("write");
@@ -5512,18 +5502,18 @@ int fileDescriptor = open("student_record.csv",
         }
     }
     double avg3 = (double) ms.total_assignment3/counter;
-    snprintf(str, 10000, "The average marks of all students in Section %s in Assignment %d is: %lf\n", section, 3, avg3);
+    snprintf(str, 10000, "The average marks of all students in Section A in Assignment %d is: %lf\n", 3, avg3);
     size_t w3 = write(1, str, strlen(str));
     if (w3 < 0)
     {
         if (
-# 152 "1b.c" 3 4
+# 142 "1b.c" 3 4
            (*__errno_location ()) 
-# 152 "1b.c"
+# 142 "1b.c"
                  == 
-# 152 "1b.c" 3 4
+# 142 "1b.c" 3 4
                     4
-# 152 "1b.c"
+# 142 "1b.c"
                          )
         {
             perror("write");
@@ -5531,18 +5521,18 @@ int fileDescriptor = open("student_record.csv",
         }
     }
     double avg4 = (double) ms.total_assignment4/counter;
-    snprintf(str, 10000, "The average marks of all students in Section %s in Assignment %d is: %lf\n", section, 4, avg4);
+    snprintf(str, 10000, "The average marks of all students in Section A in Assignment %d is: %lf\n", 4, avg4);
     size_t w4 = write(1, str, strlen(str));
     if (w4 < 0)
     {
         if (
-# 163 "1b.c" 3 4
+# 153 "1b.c" 3 4
            (*__errno_location ()) 
-# 163 "1b.c"
+# 153 "1b.c"
                  == 
-# 163 "1b.c" 3 4
+# 153 "1b.c" 3 4
                     4
-# 163 "1b.c"
+# 153 "1b.c"
                          )
         {
             perror("write");
@@ -5550,18 +5540,18 @@ int fileDescriptor = open("student_record.csv",
         }
     }
     double avg5 = (double) ms.total_assignment5/counter;
-    snprintf(str, 10000, "The average marks of all students in Section %s in Assignment %d is: %lf\n", section, 5, avg5);
+    snprintf(str, 10000, "The average marks of all students in Section A in Assignment %d is: %lf\n", 5, avg5);
     size_t w5 = write(1, str, strlen(str));
     if (w5 < 0)
     {
         if (
-# 174 "1b.c" 3 4
+# 164 "1b.c" 3 4
            (*__errno_location ()) 
-# 174 "1b.c"
+# 164 "1b.c"
                  == 
-# 174 "1b.c" 3 4
+# 164 "1b.c" 3 4
                     4
-# 174 "1b.c"
+# 164 "1b.c"
                          )
         {
             perror("write");
@@ -5569,18 +5559,264 @@ int fileDescriptor = open("student_record.csv",
         }
     }
     double avg6 = (double) ms.total_assignment6/counter;
-    snprintf(str, 10000, "The average marks of all students in Section %s in Assignment %d is: %lf\n", section, 6, avg6);
+    snprintf(str, 10000, "The average marks of all students in Section A in Assignment %d is: %lf\n", 6, avg6);
     size_t w6 = write(1, str, strlen(str));
     if (w6 < 0)
     {
         if (
-# 185 "1b.c" 3 4
+# 175 "1b.c" 3 4
            (*__errno_location ()) 
-# 185 "1b.c"
+# 175 "1b.c"
                  == 
-# 185 "1b.c" 3 4
+# 175 "1b.c" 3 4
                     4
-# 185 "1b.c"
+# 175 "1b.c"
+                         )
+        {
+            perror("write");
+            return;
+        }
+    }
+    printf("\n");
+}
+void processDataSecB(void* args)
+{
+
+int fileDescriptor = open("student_record.csv", 
+# 186 "1b.c" 3 4
+                                               00
+# 186 "1b.c"
+                                                       );
+    if (fileDescriptor == -1)
+    {
+        perror("Error in Open Operation");
+        return;
+    }
+    char *tempchar = (char *)calloc(9696, sizeof(char));
+    char *data[9696];
+    int bytesRead = read(fileDescriptor, tempchar, 9696);
+    if (bytesRead < 0)
+    {
+        perror("Error in Read Operation");
+        return;
+    }
+    char *token = strtok(tempchar, "\n");
+    int line_no = 0;
+
+    while (token != 
+# 203 "1b.c" 3 4
+                   ((void *)0)
+# 203 "1b.c"
+                       )
+    {
+        data[line_no] = token;
+        line_no += 1;
+        token = strtok(
+# 207 "1b.c" 3 4
+                      ((void *)0)
+# 207 "1b.c"
+                          , "\n");
+    }
+    int marks[line_no-1][6];
+    char* sectionTracker[line_no-1];
+    int section_size = 0;
+    struct marks_structure marks_store = {0,0,0,0,0,0};
+    int tempIntforStudentID;
+    for (int i = 0; i < line_no-1; i++)
+    {
+        token = strtok(data[i + 1], ",");
+        tempIntforStudentID = atoi(token);
+        token = strtok(
+# 218 "1b.c" 3 4
+                      ((void *)0)
+# 218 "1b.c"
+                          , ",");
+        sectionTracker[i] = token;
+        token = strtok(
+# 220 "1b.c" 3 4
+                      ((void *)0)
+# 220 "1b.c"
+                          , ",");
+        marks[i][0] = atoi(token);
+        token = strtok(
+# 222 "1b.c" 3 4
+                      ((void *)0)
+# 222 "1b.c"
+                          , ",");
+        marks[i][1] = atoi(token);
+        token = strtok(
+# 224 "1b.c" 3 4
+                      ((void *)0)
+# 224 "1b.c"
+                          , ",");
+        marks[i][2] = atoi(token);
+        token = strtok(
+# 226 "1b.c" 3 4
+                      ((void *)0)
+# 226 "1b.c"
+                          , ",");
+        marks[i][3] = atoi(token);
+        token = strtok(
+# 228 "1b.c" 3 4
+                      ((void *)0)
+# 228 "1b.c"
+                          , ",");
+        marks[i][4] = atoi(token);
+        token = strtok(
+# 230 "1b.c" 3 4
+                      ((void *)0)
+# 230 "1b.c"
+                          , ",");
+        marks[i][5] = atoi(token);
+    }
+    if (close(fileDescriptor) == -1)
+    {
+        perror("File is Closed");
+        return;
+    }
+    int total_assignment1 = 0;
+    int total_assignment2 = 0;
+    int total_assignment3 = 0;
+    int total_assignment4 = 0;
+    int total_assignment5 = 0;
+    int total_assignment6 = 0;
+    int counter = 0;
+
+    for (int i = 0; i < line_no-1; i++){
+        if (strcmp(sectionTracker[i], "B")==0){
+            counter++;
+            total_assignment1 += marks[i][0];
+            total_assignment2 += marks[i][1];
+            total_assignment3 += marks[i][2];
+            total_assignment4 += marks[i][3];
+            total_assignment5 += marks[i][4];
+            total_assignment6 += marks[i][5];
+        }
+    }
+    total_count = line_no-1;
+    section_size = counter;
+    struct marks_structure ms = marks_store;
+    ms.total_assignment1 = total_assignment1;
+    ms.total_assignment2 = total_assignment2;
+    ms.total_assignment3 = total_assignment3;
+    ms.total_assignment4 = total_assignment4;
+    ms.total_assignment5 = total_assignment5;
+    ms.total_assignment6 = total_assignment6;
+    char str[1000000];
+    secB[0] = total_assignment1;
+    secB[1] = total_assignment2;
+    secB[2] = total_assignment3;
+    secB[3] = total_assignment4;
+    secB[4] = total_assignment5;
+    secB[5] = total_assignment6;
+    double avg1 = (double) (ms.total_assignment1)/counter;
+    snprintf(str, 10000, "The average marks of all students in Section B in Assignment %d is: %lf\n", 1, avg1);
+    size_t w1 = write(1, str, strlen(str));
+    if (w1 < 0)
+    {
+        if (
+# 278 "1b.c" 3 4
+           (*__errno_location ()) 
+# 278 "1b.c"
+                 == 
+# 278 "1b.c" 3 4
+                    4
+# 278 "1b.c"
+                         )
+        {
+            perror("write");
+            return;
+        }
+    }
+    double avg2 = (double) ms.total_assignment2/counter;
+    snprintf(str, 10000, "The average marks of all students in Section B in Assignment %d is: %lf\n", 2, avg2);
+    size_t w2 = write(1, str, strlen(str));
+    if (w2 < 0)
+    {
+        if (
+# 289 "1b.c" 3 4
+           (*__errno_location ()) 
+# 289 "1b.c"
+                 == 
+# 289 "1b.c" 3 4
+                    4
+# 289 "1b.c"
+                         )
+        {
+            perror("write");
+            return;
+        }
+    }
+    double avg3 = (double) ms.total_assignment3/counter;
+    snprintf(str, 10000, "The average marks of all students in Section B in Assignment %d is: %lf\n", 3, avg3);
+    size_t w3 = write(1, str, strlen(str));
+    if (w3 < 0)
+    {
+        if (
+# 300 "1b.c" 3 4
+           (*__errno_location ()) 
+# 300 "1b.c"
+                 == 
+# 300 "1b.c" 3 4
+                    4
+# 300 "1b.c"
+                         )
+        {
+            perror("write");
+            return;
+        }
+    }
+    double avg4 = (double) ms.total_assignment4/counter;
+    snprintf(str, 10000, "The average marks of all students in Section B in Assignment %d is: %lf\n", 4, avg4);
+    size_t w4 = write(1, str, strlen(str));
+    if (w4 < 0)
+    {
+        if (
+# 311 "1b.c" 3 4
+           (*__errno_location ()) 
+# 311 "1b.c"
+                 == 
+# 311 "1b.c" 3 4
+                    4
+# 311 "1b.c"
+                         )
+        {
+            perror("write");
+            return;
+        }
+    }
+    double avg5 = (double) ms.total_assignment5/counter;
+    snprintf(str, 10000, "The average marks of all students in Section B in Assignment %d is: %lf\n", 5, avg5);
+    size_t w5 = write(1, str, strlen(str));
+    if (w5 < 0)
+    {
+        if (
+# 322 "1b.c" 3 4
+           (*__errno_location ()) 
+# 322 "1b.c"
+                 == 
+# 322 "1b.c" 3 4
+                    4
+# 322 "1b.c"
+                         )
+        {
+            perror("write");
+            return;
+        }
+    }
+    double avg6 = (double) ms.total_assignment6/counter;
+    snprintf(str, 10000, "The average marks of all students in Section B in Assignment %d is: %lf\n", 6, avg6);
+    size_t w6 = write(1, str, strlen(str));
+    if (w6 < 0)
+    {
+        if (
+# 333 "1b.c" 3 4
+           (*__errno_location ()) 
+# 333 "1b.c"
+                 == 
+# 333 "1b.c" 3 4
+                    4
+# 333 "1b.c"
                          )
         {
             perror("write");
@@ -5593,37 +5829,36 @@ int fileDescriptor = open("student_record.csv",
 int main()
 {
     pthread_t thread1, thread2;
-    section = "A";
     pthread_create(&thread1, 
-# 198 "1b.c" 3 4
+# 345 "1b.c" 3 4
                             ((void *)0)
-# 198 "1b.c"
-                                , (void*)&processData, 
-# 198 "1b.c" 3 4
-                                                       ((void *)0)
-# 198 "1b.c"
-                                                           );
-    pthread_join(thread1, 
-# 199 "1b.c" 3 4
-                         ((void *)0)
-# 199 "1b.c"
-                             );
-    section = "B";
+# 345 "1b.c"
+                                , (void*)&processDatasecA, 
+# 345 "1b.c" 3 4
+                                                           ((void *)0)
+# 345 "1b.c"
+                                                               );
+    sleep(1);
     pthread_create(&thread2, 
-# 201 "1b.c" 3 4
+# 347 "1b.c" 3 4
                             ((void *)0)
-# 201 "1b.c"
-                                , (void*)&processData, 
-# 201 "1b.c" 3 4
-                                                       ((void *)0)
-# 201 "1b.c"
-                                                           );
-    pthread_join(thread2, 
-# 202 "1b.c" 3 4
+# 347 "1b.c"
+                                , (void*)&processDataSecB, 
+# 347 "1b.c" 3 4
+                                                           ((void *)0)
+# 347 "1b.c"
+                                                               );
+    pthread_join(thread1, 
+# 348 "1b.c" 3 4
                          ((void *)0)
-# 202 "1b.c"
+# 348 "1b.c"
                              );
-
+    pthread_join(thread2, 
+# 349 "1b.c" 3 4
+                         ((void *)0)
+# 349 "1b.c"
+                             );
+    sleep(1);
     char str[1000000];
     for (int i = 0; i < 6; i++){
         double avg = (double) (secA[i]+secB[i])/26;
@@ -5632,13 +5867,13 @@ int main()
         if (w < 0)
         {
             if (
-# 211 "1b.c" 3 4
+# 358 "1b.c" 3 4
                (*__errno_location ()) 
-# 211 "1b.c"
+# 358 "1b.c"
                      == 
-# 211 "1b.c" 3 4
+# 358 "1b.c" 3 4
                         4
-# 211 "1b.c"
+# 358 "1b.c"
                              )
             {
                 perror("write");
@@ -5647,9 +5882,9 @@ int main()
         }
     }
     pthread_exit(
-# 218 "1b.c" 3 4
+# 365 "1b.c" 3 4
                 ((void *)0)
-# 218 "1b.c"
+# 365 "1b.c"
                     );
     return 0;
 }
