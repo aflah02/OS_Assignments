@@ -49,3 +49,4 @@ int main(){
     waitforall(pid, sr, st, &status);
     exit(0);
 }
+
