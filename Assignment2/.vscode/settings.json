@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "unistd.h": "c",
+        "types.h": "c",
+        "signal.h": "c",
+        "stdlib.h": "c",
+        "time.h": "c",
+        "errno.h": "c",
+        "stdio.h": "c"
+    }
+}
