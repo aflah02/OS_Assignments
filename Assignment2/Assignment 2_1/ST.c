@@ -6,7 +6,6 @@
 pid_t pid;
 
 int main(int no,char *args[]){
-    
     char *str = args[0];
     pid = atoi(str);
     if (signal (SIGALRM, signal_handler1) == SIG_ERR) {

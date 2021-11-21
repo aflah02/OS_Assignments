@@ -1,0 +1,42 @@
+diff --git b/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl a/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+index f6b5779..e2b714e 100644
+--- b/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
++++ a/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -369,7 +369,7 @@
+ 445	common	landlock_add_rule	sys_landlock_add_rule
+ 446	common	landlock_restrict_self	sys_landlock_restrict_self
+ 447	common	memfd_secret		sys_memfd_secret
+-
++448 common  kernel_2d_memcpy    sys_kernel_2d_memcpy
+ #
+ # Due to a historical design error, certain syscalls are numbered differently
+ # in x32 as compared to native x86_64.  These syscalls have numbers 512-547.
+diff --git b/linux-5.14.4/kernel/sys.c a/linux-5.14.4/kernel/sys.c
+index ef1a78f..14c6cf3 100644
+--- b/linux-5.14.4/kernel/sys.c
++++ a/linux-5.14.4/kernel/sys.c
+@@ -199,7 +199,23 @@ static int set_one_prio(struct task_struct *p, int niceval, int error)
+ out:
+ 	return error;
+ }
+-
++SYSCALL_DEFINE4(kernel_2d_memcpy, float *, dst, float *, src, int, row_count, int, col_count)
++{
++    float temp[row_count][col_count];
++    int op1Failed = __copy_from_user(temp, src, sizeof(temp));
++    if (op1Failed)
++    {
++        printk("copy_from_user failed to copy: look at internal implementation under SYSCALL_DEFINE4 for more details\n");
++        return -1;
++    }
++    int op2Failed = __copy_to_user(dst, temp, sizeof(temp));
++    if (op2Failed)
++    {
++        printk("copy_to_user failed to copy: look at internal implementation under SYSCALL_DEFINE4 for more details\n");
++        return -1;
++    }
++    return 0;
++}
+ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ {
+ 	struct task_struct *g, *p;
