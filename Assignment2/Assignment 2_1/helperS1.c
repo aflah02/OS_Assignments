@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+
 int isLessThanZero(int x){
     if (x < 0){
         return 1;
