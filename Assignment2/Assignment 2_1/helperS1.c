@@ -5,10 +5,8 @@
 #include<stdlib.h>
 #include <sys/wait.h>
 #include <time.h>
-
-static void printPID(int pid){
-    printf("%d\n",pid);
-} 
+#include <stdint.h>
+#include <string.h>
 
 int isLessThanZero(int x){
     if (x < 0){
@@ -17,10 +15,13 @@ int isLessThanZero(int x){
     return 0;
 }
 
-static void printTime(time_t timeStamp){
-    char buffer[26];
-    strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", localtime(&(timeStamp)));
-    printf("Timestamp for %ld is %s according to system timezone.\n", timeStamp, buffer);
+static void printTime(uint64_t timeStamp){
+    uint64_t hrs = timeStamp/3600;
+    uint64_t mins = (timeStamp%3600)/60;
+    uint64_t secs = timeStamp-hrs*3600-mins*60;
+    char buffer[1000];
+    snprintf(buffer, 1000, "Time stamp since System Started is Hours:%ld, Minutes:%ld, Seconds:%ld\n",hrs, mins, secs);
+    write(0, buffer, strlen(buffer));
 }
 
 static void waitforall(pid_t pid1, pid_t pid2, pid_t pid3, int *status){
@@ -34,12 +35,11 @@ static void throwperror(char* str){
 }
 
 static void printRandomNumber(int x){
-    printf("Random Number generated using the process is %d \n",(-1*x));
+    printf("Random Number generated is %d \n",(-1*x));
 }
 
-static void signal_handler (int signo , siginfo_t *si, void *context)
+static void S1Handler(int signo, siginfo_t *si, void *context)
 {   
-    printf("Signal Handler of SIGTERM\n");
     if(isLessThanZero(si->si_int)){
         printRandomNumber(si->si_int);
     }

@@ -9,10 +9,7 @@ int main(int no,char *args[]){
     char *str = args[0];
     pid = atoi(str);
     sigalrmcall();
-    sigtemcall();
-
-
+    sigtermcall();
     useitimerval();
     callRaiseandCheckforError();
-    printf("ST end\n");
 }

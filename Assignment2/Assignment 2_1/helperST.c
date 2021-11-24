@@ -4,17 +4,26 @@
 #include <signal.h>
 #include <time.h>
 #include <sys/time.h>
+#include <stdint.h>
 pid_t pid;
 
-static unsigned long long rdtsc(void){
+static unsigned long long InLineTimeStampGenerator(void){
     unsigned int hi, lo;
     __asm__ volatile ("rdtsc" : "=a"(lo), "=d"(hi));
     return ((unsigned long long)(hi) << 32 | lo);
 }
 
-static void signal_handler (int signo)
+static void sigtermPrintHandler(int signo)
 {   
     printf("SIGTERM Signal Handler of ST\n");
+    exit(0);
+}
+
+static void itimererror(struct itimerval it_val){
+    if (setitimer(ITIMER_REAL, &it_val, NULL) == -1) {
+        perror("Error calling setitimer()");
+        exit(1);
+    }
 }
 
 static void useitimerval(){
@@ -22,30 +31,21 @@ static void useitimerval(){
     it_val.it_value.tv_sec = 1;
     it_val.it_value.tv_usec = 100000;	
     it_val.it_interval = it_val.it_value;
-    if (setitimer(ITIMER_REAL, &it_val, NULL) == -1) {
-        perror("error calling setitimer()");
-        exit(1);
-    }
+    itimererror(it_val);
 }
 
-static time_t printTime(){
-    time_t timeStamp = rdtsc();
-    time(&timeStamp);
-    struct tm *converted_time;
-    converted_time = localtime(&timeStamp);
-    char buffer[26];
-    strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", converted_time);
-    return timeStamp;
+static uint64_t printTime(){
+    time_t timeStamp = InLineTimeStampGenerator();
+    uint64_t time = timeStamp/(2994.385*1000000);
+    return time;
 }
 
-static void signal_handler1 (int signo)
+static void TimeHandler(int signo)
 {   
-    printf("Signal Handler of ST\n");
-    time_t toUse = printTime();
+    uint64_t toUse = printTime();
     union sigval value;
     value.sival_int = toUse;
     if(sigqueue(pid, SIGTERM, value) == 0) {
-                printf("signal sent successfully!!\n");
     } else {
             perror("SIGSENT-ERROR:");
     }
@@ -64,14 +64,14 @@ static void callRaiseandCheckforError(){
 }
 
 static void sigalrmcall(){
-    if (signal (SIGALRM, signal_handler1) == SIG_ERR) {
-        fprintf (stderr, "Cannot handle SIGALRM!\n");
-        exit (-1);
+    if (signal (SIGALRM, TimeHandler) == SIG_ERR) {
+        fprintf (stderr, "Error in SIGALRM\n");
+        exit(-1);
     }
 }
 static void sigtermcall(){
-    if (signal (SIGTERM, signal_handler) == SIG_ERR) {
-        fprintf (stderr, "Cannot handle SIGALRM!\n");
-        exit (-1);
+    if (signal (SIGTERM, sigtermPrintHandler) == SIG_ERR) {
+        fprintf (stderr, "Error in SIGTERM\n");
+        exit(-1);
     }
 }

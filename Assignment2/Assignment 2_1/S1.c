@@ -13,10 +13,9 @@ int main(){
     pid = fork();
     if(pid==0){
         int pid1 = getpid();
-        printPID(pid1);
         struct sigaction sa;
         sa.sa_flags = SA_SIGINFO;
-        sa.sa_sigaction = signal_handler;
+        sa.sa_sigaction = S1Handler;
         sigaction(SIGTERM, &sa,0);
         waiter();
     }
@@ -25,15 +24,15 @@ int main(){
         sprintf(arg, "%d", pid);
         sr = fork();
         if(sr==0){
-            char* arg1 = "./SR";
-            performexecl(arg1,arg);
+            char* path = "./SR";
+            performexecl(path,arg);
         }
         else if(sr>0){
             int status;
             st = fork();
             if(st==0){
-                char* arg2 = "./ST";
-                performexecl(arg2,arg);
+                char* path = "./ST";
+                performexecl(path,arg);
             }
             else if(st<0){
                 throwperror("fork");
