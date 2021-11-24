@@ -9,7 +9,6 @@ int main(int no,char *args[]){
     char *str = args[0];
     pid = atoi(str);
     sigalrmcall();
-    sigtermcall();
     useitimerval();
-    callRaiseandCheckforError();
+    waiter();
 }

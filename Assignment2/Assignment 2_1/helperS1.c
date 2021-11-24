@@ -7,7 +7,8 @@
 #include <time.h>
 #include <stdint.h>
 #include <string.h>
-
+#include <sys/ipc.h>
+#include <sys/shm.h>
 int isLessThanZero(int x){
     if (x < 0){
         return 1;
@@ -15,13 +16,14 @@ int isLessThanZero(int x){
     return 0;
 }
 
-static void printTime(uint64_t timeStamp){
-    uint64_t hrs = timeStamp/3600;
-    uint64_t mins = (timeStamp%3600)/60;
-    uint64_t secs = timeStamp-hrs*3600-mins*60;
+static void printTime(){
+    key_t key = ftok("shmfile",65);
+    int shmid = shmget(key,1024,0666|IPC_CREAT);
+    char *str = (char*) shmat(shmid,(void*)0,0);
     char buffer[1000];
-    snprintf(buffer, 1000, "Time stamp since System Started is Hours:%ld, Minutes:%ld, Seconds:%ld\n",hrs, mins, secs);
-    write(0, buffer, strlen(buffer));
+    snprintf(buffer, 1000, "%s",str);
+    write(1, buffer, strlen(buffer));
+    shmdt(buffer);
 }
 
 static void waitforall(pid_t pid1, pid_t pid2, pid_t pid3, int *status){
@@ -44,7 +46,7 @@ static void S1Handler(int signo, siginfo_t *si, void *context)
         printRandomNumber(si->si_int);
     }
     else{
-        printTime(si->si_int);
+        printTime();
     }
 }
 

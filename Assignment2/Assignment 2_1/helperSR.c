@@ -49,8 +49,8 @@ static void itimerRealerror(struct itimerval it_val){
 }
 static void useitimerval(){
     struct itimerval it_val;
-    it_val.it_value.tv_sec = 2;
-    it_val.it_value.tv_usec = 200000;	
+    it_val.it_value.tv_sec = 1;
+    it_val.it_value.tv_usec = 100000;	
     it_val.it_interval = it_val.it_value;
     itimerRealerror(it_val);
 }
