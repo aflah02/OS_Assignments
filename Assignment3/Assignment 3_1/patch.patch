@@ -1,0 +1,80 @@
+diff --git B/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl A/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+index f6b5779..e83102a 100644
+--- B/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
++++ A/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -369,6 +369,7 @@
+ 445	common	landlock_add_rule	sys_landlock_add_rule
+ 446	common	landlock_restrict_self	sys_landlock_restrict_self
+ 447	common	memfd_secret		sys_memfd_secret
++448	common	vruntime_delayer	sys_vruntime_delayer
+ 
+ #
+ # Due to a historical design error, certain syscalls are numbered differently
+diff --git B/linux-5.14.4/include/linux/sched.h A/linux-5.14.4/include/linux/sched.h
+index ec8d07d..dc6d1a2 100644
+--- B/linux-5.14.4/include/linux/sched.h
++++ A/linux-5.14.4/include/linux/sched.h
+@@ -475,6 +475,7 @@ struct sched_entity {
+ 	u64				prev_sum_exec_runtime;
+ 
+ 	u64				nr_migrations;
++	u64             vruntimedelay;
+ 
+ 	struct sched_statistics		statistics;
+ 
+diff --git B/linux-5.14.4/kernel/sched/core.c A/linux-5.14.4/kernel/sched/core.c
+index a240343..0fc68ae 100644
+--- B/linux-5.14.4/kernel/sched/core.c
++++ A/linux-5.14.4/kernel/sched/core.c
+@@ -3956,6 +3956,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+ 	p->se.prev_sum_exec_runtime	= 0;
+ 	p->se.nr_migrations		= 0;
+ 	p->se.vruntime			= 0;
++	p->se.vruntimedelay	= 0;
+ 	INIT_LIST_HEAD(&p->se.group_node);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff --git B/linux-5.14.4/kernel/sched/fair.c A/linux-5.14.4/kernel/sched/fair.c
+index 30a6984..33598e2 100644
+--- B/linux-5.14.4/kernel/sched/fair.c
++++ A/linux-5.14.4/kernel/sched/fair.c
+@@ -812,6 +812,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
+ 	schedstat_add(cfs_rq->exec_clock, delta_exec);
+ 
+ 	curr->vruntime += calc_delta_fair(delta_exec, curr);
++	curr->vruntime += curr->vruntimedelay;
+ 	update_min_vruntime(cfs_rq);
+ 
+ 	if (entity_is_task(curr)) {
+diff --git B/linux-5.14.4/kernel/sys.c A/linux-5.14.4/kernel/sys.c
+index ef1a78f..bcf15f4 100644
+--- B/linux-5.14.4/kernel/sys.c
++++ A/linux-5.14.4/kernel/sys.c
+@@ -1684,6 +1684,27 @@ SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
+ 	return ret;
+ }
+ 
++SYSCALL_DEFINE2(vruntime_delayer, pid_t, processID, long, delayToAdd){
++	if (delayToAdd < 0){
++		printk("Delay being added is Less than 0");
++		return -1;
++	}
++	if (processID < 0){
++		printk("Invalid Process ID Given");
++		return -1;
++	}
++	struct pid *PID_STRUCTURE = find_get_pid(processID);
++	if (PID_STRUCTURE == NULL){
++		printk("No Process Found");
++		return -1;
++	}
++	long delayToAddinNanoSeconds = delayToAdd * 1000000;
++	struct task_struct *TASK_STRUCTURE = pid_task(PID_STRUCTURE, PIDTYPE_PID);
++	TASK_STRUCTURE->se.vruntimedelay = delayToAddinNanoSeconds;
++	printk("New delay Time is set to %ld", delayToAddinNanoSeconds);
++	return 0;
++}
++
+ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ {
+ 	struct rlimit new_rlim;
