@@ -20,6 +20,7 @@
 - P1_Queue.c and P2_Queue.c use functions from helpers.c to generate random string and send and recieve string via Queue
 - After Queue is created messages are sent using similar strings as FIFO using msgsnd and received using msgrcv
 - String and Indexes are printed on client and server side
+- Due to some reasons for permission it might be needed to enter sudo mode in both terminals before running this part
   
 ## Sockets
 
