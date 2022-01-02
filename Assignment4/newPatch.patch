@@ -1,0 +1,164 @@
+diff --git B/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl A/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+index f6b5779..8a8690a 100644
+--- B/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
++++ A/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -369,7 +369,9 @@
+ 445	common	landlock_add_rule	sys_landlock_add_rule
+ 446	common	landlock_restrict_self	sys_landlock_restrict_self
+ 447	common	memfd_secret		sys_memfd_secret
+-
++448	common	vruntime_delayer	sys_vruntime_delayer
++449	common	reader                  sys_reader
++450	common	writer                  sys_writer
+ #
+ # Due to a historical design error, certain syscalls are numbered differently
+ # in x32 as compared to native x86_64.  These syscalls have numbers 512-547.
+diff --git B/linux-5.14.4/include/linux/sched.h A/linux-5.14.4/include/linux/sched.h
+index ec8d07d..dc6d1a2 100644
+--- B/linux-5.14.4/include/linux/sched.h
++++ A/linux-5.14.4/include/linux/sched.h
+@@ -475,6 +475,7 @@ struct sched_entity {
+ 	u64				prev_sum_exec_runtime;
+ 
+ 	u64				nr_migrations;
++	u64             vruntimedelay;
+ 
+ 	struct sched_statistics		statistics;
+ 
+diff --git B/linux-5.14.4/kernel/sched/core.c A/linux-5.14.4/kernel/sched/core.c
+index a240343..0fc68ae 100644
+--- B/linux-5.14.4/kernel/sched/core.c
++++ A/linux-5.14.4/kernel/sched/core.c
+@@ -3956,6 +3956,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+ 	p->se.prev_sum_exec_runtime	= 0;
+ 	p->se.nr_migrations		= 0;
+ 	p->se.vruntime			= 0;
++	p->se.vruntimedelay	= 0;
+ 	INIT_LIST_HEAD(&p->se.group_node);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff --git B/linux-5.14.4/kernel/sched/fair.c A/linux-5.14.4/kernel/sched/fair.c
+index 30a6984..33598e2 100644
+--- B/linux-5.14.4/kernel/sched/fair.c
++++ A/linux-5.14.4/kernel/sched/fair.c
+@@ -812,6 +812,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
+ 	schedstat_add(cfs_rq->exec_clock, delta_exec);
+ 
+ 	curr->vruntime += calc_delta_fair(delta_exec, curr);
++	curr->vruntime += curr->vruntimedelay;
+ 	update_min_vruntime(cfs_rq);
+ 
+ 	if (entity_is_task(curr)) {
+diff --git B/linux-5.14.4/kernel/sys.c A/linux-5.14.4/kernel/sys.c
+index ef1a78f..3e4805f 100644
+--- B/linux-5.14.4/kernel/sys.c
++++ A/linux-5.14.4/kernel/sys.c
+@@ -22,6 +22,7 @@
+ #include <linux/device.h>
+ #include <linux/key.h>
+ #include <linux/times.h>
++#include <linux/semaphore.h>
+ #include <linux/posix-timers.h>
+ #include <linux/security.h>
+ #include <linux/suspend.h>
+@@ -154,6 +155,38 @@ int fs_overflowgid = DEFAULT_FS_OVERFLOWGID;
+ EXPORT_SYMBOL(fs_overflowuid);
+ EXPORT_SYMBOL(fs_overflowgid);
+ 
++unsigned long *buffer_queue = NULL;
++struct semaphore empty;
++struct semaphore full;
++int in = 0;
++int out = 0;
++struct semaphore mutex;
++
++static void enqueue(unsigned long item, long verbose){
++	down_interruptible(&empty);
++	down_interruptible(&mutex);
++	buffer_queue[in] = item;
++	if (verbose == 1){
++		printk(KERN_INFO "VERBOSE MODE DETECTED: Producer produced item: %lu\n", item);
++	}
++	in = (in+1)%7;
++	up(&mutex);
++	up(&full);
++}
++
++static unsigned long dequeue(long verbose){
++	unsigned long item;
++	down_interruptible(&full);
++	down_interruptible(&mutex);
++	item = buffer_queue[out];
++	if (verbose == 1){
++		printk(KERN_INFO "VERBOSE MODE DETECTED: Consumer consumed item: %lu\n", item);
++	}
++	out = (out+1)%7;
++	up(&mutex);
++	up(&empty);
++	return item;
++}
+ /*
+  * Returns true if current's euid is same as p's uid or euid,
+  * or has CAP_SYS_NICE to p's user_ns.
+@@ -199,6 +232,33 @@ static int set_one_prio(struct task_struct *p, int niceval, int error)
+ out:
+ 	return error;
+ }
++SYSCALL_DEFINE2(writer, unsigned long, item, long, verbose){
++	if (buffer_queue == NULL){
++		buffer_queue = (long *)kmalloc(7 * sizeof(unsigned long), GFP_KERNEL);
++		sema_init(&empty,7);
++		sema_init(&full,0);
++		sema_init(&mutex,1);
++		if (verbose == 1){
++			printk(KERN_INFO "VERBOSE MODE DETECTED: Writer created Buffer Queue and also created Semaphores\n");
++		}
++	}
++	enqueue(item, 1);
++	return 0;
++}
++
++SYSCALL_DEFINE1(reader, long, verbose){
++	if (buffer_queue == NULL){
++		buffer_queue = (long *)kmalloc(7 * sizeof(long), GFP_KERNEL);
++		sema_init(&empty,7);
++		sema_init(&full,0);
++		sema_init(&mutex,1);
++		if (verbose == 1){
++			printk(KERN_INFO "VERBOSE MODE DETECTED: Reader created Buffer Queue and also created Semaphores\n");
++		}
++	}
++	unsigned long val = dequeue(1);
++	return val;
++}
+ 
+ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ {
+@@ -1684,6 +1744,27 @@ SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
+ 	return ret;
+ }
+ 
++SYSCALL_DEFINE2(vruntime_delayer, pid_t, processID, long, delayToAdd){
++	if (delayToAdd < 0){
++		printk("Delay being added is Less than 0");
++		return -1;
++	}
++	if (processID < 0){
++		printk("Invalid Process ID Given");
++		return -1;
++	}
++	struct pid *PID_STRUCTURE = find_get_pid(processID);
++	if (PID_STRUCTURE == NULL){
++		printk("No Process Found");
++		return -1;
++	}
++	long delayToAddinNanoSeconds = delayToAdd * 1000000;
++	struct task_struct *TASK_STRUCTURE = pid_task(PID_STRUCTURE, PIDTYPE_PID);
++	TASK_STRUCTURE->se.vruntimedelay = delayToAddinNanoSeconds;
++	printk("New delay Time is set to %ld", delayToAddinNanoSeconds);
++	return 0;
++}
++
+ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ {
+ 	struct rlimit new_rlim;
