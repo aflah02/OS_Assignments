@@ -6,7 +6,7 @@
 
 ## The assignments broadly are -
 
-1) [Refresher Assignments](https://github.com/aflah02/OS_Assignments/tree/master/Refresher%20Assignments) - C Programming based questions
+1) [Refresher Assignments](https://github.com/aflah02/OS_Assignments/tree/master/Refresher%20Assignments) - C Programming/ Bash Scripting based questions
 2) [Assignment 1](https://github.com/aflah02/OS_Assignments/tree/master/Assignment1) - Using fork() and pthreads() for parallel execution and writing assembly code to manipulate stack pointer
 3) [Assignment 2](https://github.com/aflah02/OS_Assignments/tree/master/Assignment2) - Using Signals and Shared Memory to send messages and data across processes and Writing Syscall to Copy 2D Matrices
 4) [Assignment 3](https://github.com/aflah02/OS_Assignments/tree/master/Assignment3) - Modifying the Linux Kernel Scheduler to add a Delay to vruntime and using Queues, FIFOs and Sockets to send messages between 2 processes (p.s. has one of my commit rants)
